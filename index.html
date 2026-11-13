@@ -358,7 +358,8 @@ body:before{
 <script>
 // ✅ NUEVA CONFIGURACIÓN DE TRANSMISIÓN
 const HTTP_STREAM = "http://88.150.230.110:29986/stream";
-const STREAM_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(HTTP_STREAM);
+const STREAM_URL = "https://corsproxy.io/?" + encodeURIComponent(HTTP_STREAM);
+
 
 const player = document.getElementById("radioPlayer");
 const playIcon = document.getElementById("playIcon");
