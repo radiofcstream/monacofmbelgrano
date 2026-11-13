@@ -7,10 +7,7 @@
       maximum-scale=1.0, user-scalable=no">
 <title>MONACO FM</title>
 
-<!-- ✅ Icono en la pestaña -->
 <link rel="icon" type="image/png" href="logo.png">
-
-<!-- ✅ Permite instalar desde el navegador -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#00b83d">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -95,7 +92,6 @@ body:before{
     padding-bottom:60px;
 }
 
-/* ✅ Tu logo como imagen principal */
 .radio-image{
     width:254px;
     height:254px;
@@ -290,6 +286,14 @@ body:before{
     letter-spacing:0.3px;
 }
 
+.status-message{
+    margin-top:15px;
+    font-size:14px;
+    opacity:0.8;
+    height:20px;
+    text-align:center;
+}
+
 @media(max-height:750px){
     .content{ padding-top:125px; padding-bottom:50px; }
     .radio-image{ width:220px; height:220px; }
@@ -318,66 +322,77 @@ body:before{
 
     <div class="content">
 
-        <!-- ✅ Tu logo en lugar de la imagen anterior -->
         <img class="radio-image" src="logo.png" alt="MONACO FM">
 
-        <div class="equalizer">
+        <div class="equalizer" id="equalizer" style="opacity:0.3">
             <span></span><span></span><span></span><span></span>
             <span></span><span></span><span></span><span></span>
         </div>
 
         <div class="radio-name">MONACO FM</div>
         <div class="radio-description">Gral Belgrano - Formosa</div>
+        <div class="status-message" id="statusMsg">Listo para reproducir</div>
 
         <div class="controls">
             <button class="control-btn" onclick="temporizador()">
                 <div class="timer-icon"></div>
             </button>
 
-            <button class="play-button" id="playButton" onclick="playRadio()">
+            <button class="play-button" id="playButton" onclick="togglePlay()">
                 <span class="play-icon" id="playIcon">▶</span>
             </button>
 
             <button class="control-btn volume" onclick="mostrarVolumen()">
                 <span class="volume-icon">🔊</span>
                 <div class="volume-slider" id="volumeSlider">
-                    <input type="range" min="0" max="1" step="0.01" value="1" id="volume">
+                    <input type="range" min="0" max="1" step="0.01" value="0.8" id="volume">
                 </div>
             </button>
         </div>
     </div>
 
-    <!-- Botón de instalación -->
     <button class="install-btn" id="installBtn">📲 Instalar App</button>
 
     <div class="firma">RadioFCstream - tu radio al mundo - Fcaballero</div>
 </div>
 
 <audio id="radioPlayer" preload="none" crossorigin="anonymous">
+    Tu navegador no soporta el elemento de audio.
+
 
 <script>
-// ✅ NUEVA CONFIGURACIÓN DE TRANSMISIÓN
+// ==========================================
+// CONFIGURACIÓN DEL STREAMING CON PROXY HTTPS
+// ==========================================
 const HTTP_STREAM = "http://88.150.230.110:29986/stream";
+
+// Opción 1: corsproxy.io (gratis, sin clave para uso básico)
+// ⚠️ Sin clave API funciona pero con límites; para más registrate en corsproxy.io
 const STREAM_URL = "https://corsproxy.io/?" + encodeURIComponent(HTTP_STREAM);
 
+// Opción 2: Alternativa si corsproxy.io falla
+// const STREAM_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(HTTP_STREAM);
 
 const player = document.getElementById("radioPlayer");
 const playIcon = document.getElementById("playIcon");
 const volume = document.getElementById("volume");
 const installBtn = document.getElementById("installBtn");
+const statusMsg = document.getElementById("statusMsg");
+const equalizer = document.getElementById("equalizer");
 
 let deferredPrompt;
+let isPlaying = false;
 
-// ✅ Registro del Service Worker para instalación
+// Registro del Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Service Worker registrado ✅', reg.scope))
-            .catch(err => console.log('Error Service Worker ❌', err));
+            .then(reg => console.log('✅ Service Worker registrado:', reg.scope))
+            .catch(err => console.log('❌ Error Service Worker:', err));
     });
 }
 
-// ✅ Mostrar botón de instalación
+// Botón de instalación PWA
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -393,54 +408,92 @@ installBtn.addEventListener('click', async () => {
     }
 });
 
-async function playRadio(){
-    if(player.paused){
-        // Intentar primero directo, si falla usar proxy
-        player.src = STREAM_URL;
-        player.crossOrigin = "anonymous";
-        
-        try {
-            await player.play();
-            playIcon.textContent = "Ⅱ";
-        } catch (err) {
-            console.warn("Directo falló, probando con proxy...", err);
-            player.src = PROXY_URL;
-            try {
-                await player.play();
-                playIcon.textContent = "Ⅱ";
-            } catch (err2) {
-                console.error("Error también con proxy:", err2);
-                alert("No se pudo conectar con la radio. Verifica que la transmisión esté activa.");
-                playIcon.textContent = "▶";
-            }
-        }
+// Reproducir / Pausar
+async function togglePlay() {
+    if (!isPlaying) {
+        await startPlayback();
     } else {
-        player.pause();
-        playIcon.textContent = "▶";
+        stopPlayback();
     }
 }
 
-player.addEventListener("error", function(){
+async function startPlayback() {
+    statusMsg.textContent = "Conectando...";
+    playIcon.textContent = "◯";
+    
+    player.src = STREAM_URL;
+    player.crossOrigin = "anonymous";
+    player.volume = volume.value;
+
+    try {
+        await player.play();
+        isPlaying = true;
+        playIcon.textContent = "Ⅱ";
+        statusMsg.textContent = "🔴 En reproducción";
+        equalizer.style.opacity = "1";
+    } catch (err) {
+        console.error("Error de reproducción:", err);
+        statusMsg.textContent = "⚠️ Reintentando...";
+        
+        // Segunda estrategia: alternativa si falla el primer proxy
+        const altProxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(HTTP_STREAM);
+        player.src = altProxy;
+        
+        try {
+            await player.play();
+            isPlaying = true;
+            playIcon.textContent = "Ⅱ";
+            statusMsg.textContent = "🔴 En reproducción";
+            equalizer.style.opacity = "1";
+        } catch (err2) {
+            statusMsg.textContent = "❌ No se pudo conectar";
+            playIcon.textContent = "▶";
+            alert("No se pudo conectar con la radio. Verifica que la transmisión esté activa y vuelve a intentar.");
+        }
+    }
+}
+
+function stopPlayback() {
+    player.pause();
+    player.src = "";
+    isPlaying = false;
     playIcon.textContent = "▶";
-    console.error("Error al cargar el streaming");
+    statusMsg.textContent = "Transmisión detenida";
+    equalizer.style.opacity = "0.3";
+}
+
+// Manejar errores del reproductor
+player.addEventListener("error", function(e) {
+    console.error("Error en el reproductor:", player.error);
+    if (isPlaying) {
+        stopPlayback();
+        statusMsg.textContent = "❌ Conexión perdida";
+    }
 });
 
+// Control de volumen
 volume.addEventListener("input", function(){
     player.volume = this.value;
 });
 
+// Mostrar/ocultar control de volumen
 function mostrarVolumen(){
     document.getElementById("volumeSlider").classList.toggle("show");
 }
 
+// Temporizador
 function temporizador(){
     let minutos = prompt("¿Cuántos minutos querés escuchar la radio?");
     if(!minutos || isNaN(minutos)) return;
     minutos = parseInt(minutos);
     if(minutos <= 0) return;
+    
+    alert(`⏰ La radio se detendrá en ${minutos} minuto(s)`);
     setTimeout(() => {
-        player.pause();
-        playIcon.textContent = "▶";
+        if (isPlaying) {
+            stopPlayback();
+            alert("⏰ Tiempo cumplido — transmisión detenida");
+        }
     }, minutos * 60000);
 }
 </script>
