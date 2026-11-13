@@ -1,0 +1,18 @@
+{
+  "name": "MONACO FM",
+  "short_name": "MONACO FM",
+  "description": "Tu radio al mundo - Gral Belgrano, Formosa",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00b83d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

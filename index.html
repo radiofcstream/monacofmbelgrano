@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+      maximum-scale=1.0, user-scalable=no">
+<title>MONACO FM</title>
+
+<!-- ✅ Icono en la pestaña -->
+<link rel="icon" type="image/png" href="logo.png">
+
+<!-- ✅ Permite instalar desde el navegador -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#00b83d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MONACO FM">
+<link rel="apple-touch-icon" href="logo.png">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:
+        radial-gradient(circle at 50% 25%, #39ff14 0%, transparent 38%),
+        radial-gradient(circle at 20% 80%, #00ff66 0%, transparent 35%),
+        radial-gradient(circle at 90% 70%, #1aff00 0%, transparent 30%),
+        linear-gradient(160deg,#001a00,#000000 55%,#003b0b);
+    color:white;
+}
+
+body:before{
+    content:"";
+    position:fixed;
+    width:500px;
+    height:500px;
+    border-radius:50%;
+    background:rgba(57,255,20,.20);
+    filter:blur(100px);
+    top:30%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+}
+
+.app{
+    width:100%;
+    height:100vh;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.menu{
+    position:absolute;
+    top:27px;
+    left:23px;
+    width:28px;
+    height:25px;
+    z-index:20;
+    cursor:pointer;
+}
+
+.menu span{
+    display:block;
+    width:24px;
+    height:3px;
+    margin-bottom:5px;
+    border-radius:5px;
+    background:#fff;
+}
+
+.content{
+    width:100%;
+    max-width:480px;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding-top:198px;
+    padding-bottom:60px;
+}
+
+/* ✅ Tu logo como imagen principal */
+.radio-image{
+    width:254px;
+    height:254px;
+    object-fit:contain;
+    background:#fff;
+    border-radius:9px;
+    border:2px solid rgba(255,255,255,.9);
+    box-shadow:
+        0 0 25px rgba(57,255,20,.6),
+        0 0 60px rgba(0,255,80,.35);
+}
+
+.equalizer{
+    height:55px;
+    margin-top:31px;
+    display:flex;
+    align-items:end;
+    gap:3px;
+}
+
+.equalizer span{
+    display:block;
+    width:7px;
+    background:#39ff14;
+    animation:equalizer 1s infinite ease-in-out;
+}
+
+.equalizer span:nth-child(1){height:18px;animation-delay:.1s}
+.equalizer span:nth-child(2){height:30px;animation-delay:.2s}
+.equalizer span:nth-child(3){height:45px;animation-delay:.3s}
+.equalizer span:nth-child(4){height:23px;animation-delay:.4s}
+.equalizer span:nth-child(5){height:38px;animation-delay:.5s}
+.equalizer span:nth-child(6){height:28px;animation-delay:.6s}
+.equalizer span:nth-child(7){height:48px;animation-delay:.7s}
+.equalizer span:nth-child(8){height:20px;animation-delay:.8s}
+
+@keyframes equalizer{
+    0%,100%{ transform:scaleY(.45); }
+    50%{ transform:scaleY(1); }
+}
+
+.radio-name{
+    margin-top:27px;
+    font-size:25px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.radio-description{
+    margin-top:7px;
+    font-size:19px;
+    text-align:center;
+    opacity:.95;
+}
+
+.controls{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:70px;
+    margin-top:132px;
+}
+
+.control-btn{
+    border:0;
+    background:transparent;
+    color:white;
+    cursor:pointer;
+    width:48px;
+    height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.timer-icon{
+    width:24px;
+    height:24px;
+    border:2px solid white;
+    border-radius:50%;
+    position:relative;
+}
+
+.timer-icon:before{
+    content:"";
+    position:absolute;
+    width:2px;
+    height:8px;
+    background:white;
+    left:10px;
+    top:4px;
+}
+
+.timer-icon:after{
+    content:"";
+    position:absolute;
+    width:7px;
+    height:2px;
+    background:white;
+    left:10px;
+    top:11px;
+    transform:rotate(35deg);
+    transform-origin:left center;
+}
+
+.volume{
+    position:relative;
+}
+
+.volume-icon{
+    font-size:29px;
+    line-height:1;
+}
+
+.play-button{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    border:none;
+    background:linear-gradient(145deg,#39ff14,#00b83d);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:
+        0 8px 25px rgba(0,0,0,.25),
+        0 0 25px rgba(57,255,20,.5);
+    transition:.2s;
+}
+
+.play-button:active{
+    transform:scale(.92);
+}
+
+.play-icon{
+    font-size:42px;
+    font-weight:bold;
+    line-height:1;
+}
+
+.volume-slider{
+    position:absolute;
+    bottom:90px;
+    left:50%;
+    transform:translateX(-50%);
+    width:40px;
+    height:150px;
+    display:none;
+}
+
+.volume-slider.show{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.volume-slider input{
+    width:130px;
+    height:6px;
+    accent-color:#39ff14;
+    transform:rotate(-90deg);
+    cursor:pointer;
+}
+
+.install-btn{
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:linear-gradient(145deg,#39ff14,#00b83d);
+    color:white;
+    border:none;
+    padding:12px 24px;
+    border-radius:50px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 15px rgba(57,255,20,.4);
+    z-index:100;
+    display:none;
+}
+
+.firma{
+    position:absolute;
+    bottom:12px;
+    left:0;
+    right:0;
+    text-align:center;
+    font-size:11px;
+    color:rgba(255,255,255,.65);
+    letter-spacing:0.3px;
+}
+
+@media(max-height:750px){
+    .content{ padding-top:125px; padding-bottom:50px; }
+    .radio-image{ width:220px; height:220px; }
+    .equalizer{ margin-top:20px; }
+    .radio-name{ margin-top:15px; }
+    .controls{ margin-top:70px; }
+}
+
+@media(max-width:360px){
+    .radio-image{ width:205px; height:205px; }
+    .controls{ gap:45px; }
+    .play-button{ width:78px; height:78px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="content">
+
+        <!-- ✅ Tu logo en lugar de la imagen anterior -->
+        <img class="radio-image" src="logo.png" alt="MONACO FM">
+
+        <div class="equalizer">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="radio-name">MONACO FM</div>
+        <div class="radio-description">Gral Belgrano - Formosa</div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="temporizador()">
+                <div class="timer-icon"></div>
+            </button>
+
+            <button class="play-button" id="playButton" onclick="playRadio()">
+                <span class="play-icon" id="playIcon">▶</span>
+            </button>
+
+            <button class="control-btn volume" onclick="mostrarVolumen()">
+                <span class="volume-icon">🔊</span>
+                <div class="volume-slider" id="volumeSlider">
+                    <input type="range" min="0" max="1" step="0.01" value="1" id="volume">
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Botón de instalación -->
+    <button class="install-btn" id="installBtn">📲 Instalar App</button>
+
+    <div class="firma">RadioFCstream - tu radio al mundo - Fcaballero</div>
+</div>
+
+<audio id="radioPlayer" preload="none" crossorigin="anonymous">
+
+<script>
+// ✅ NUEVA CONFIGURACIÓN DE TRANSMISIÓN
+const HTTP_STREAM = "http://88.150.230.110:29986/stream";
+const STREAM_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent(HTTP_STREAM);
+
+const player = document.getElementById("radioPlayer");
+const playIcon = document.getElementById("playIcon");
+const volume = document.getElementById("volume");
+const installBtn = document.getElementById("installBtn");
+
+let deferredPrompt;
+
+// ✅ Registro del Service Worker para instalación
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker registrado ✅', reg.scope))
+            .catch(err => console.log('Error Service Worker ❌', err));
+    });
+}
+
+// ✅ Mostrar botón de instalación
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+    }
+});
+
+async function playRadio(){
+    if(player.paused){
+        // Intentar primero directo, si falla usar proxy
+        player.src = STREAM_URL;
+        player.crossOrigin = "anonymous";
+        
+        try {
+            await player.play();
+            playIcon.textContent = "Ⅱ";
+        } catch (err) {
+            console.warn("Directo falló, probando con proxy...", err);
+            player.src = PROXY_URL;
+            try {
+                await player.play();
+                playIcon.textContent = "Ⅱ";
+            } catch (err2) {
+                console.error("Error también con proxy:", err2);
+                alert("No se pudo conectar con la radio. Verifica que la transmisión esté activa.");
+                playIcon.textContent = "▶";
+            }
+        }
+    } else {
+        player.pause();
+        playIcon.textContent = "▶";
+    }
+}
+
+player.addEventListener("error", function(){
+    playIcon.textContent = "▶";
+    console.error("Error al cargar el streaming");
+});
+
+volume.addEventListener("input", function(){
+    player.volume = this.value;
+});
+
+function mostrarVolumen(){
+    document.getElementById("volumeSlider").classList.toggle("show");
+}
+
+function temporizador(){
+    let minutos = prompt("¿Cuántos minutos querés escuchar la radio?");
+    if(!minutos || isNaN(minutos)) return;
+    minutos = parseInt(minutos);
+    if(minutos <= 0) return;
+    setTimeout(() => {
+        player.pause();
+        playIcon.textContent = "▶";
+    }, minutos * 60000);
+}
+</script>
+
+</body>
+</html>
